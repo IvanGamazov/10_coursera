@@ -7,11 +7,6 @@ import random
 from openpyxl import Workbook
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--filepath',
-                    required=False,
-                    help='Path to the output file')
-
 
 def get_courses_list():
     courses_xml = requests.get('https://www.coursera.org/sitemap~www~courses.xml').content
@@ -92,18 +87,28 @@ def output_courses_info_to_xlsx(filepath, courses_info):
         ws.append([course['name'], course['lang'], course['start'], course['len'], course['rating']])
     wb.save(filepath)
 
-if __name__ == '__main__':
+
+def get_filepath():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--filepath',
+                        required=False,
+                        help='Path to the output file')
     args = parser.parse_args()
+    if not args.filepath:
+        file_path = input('Введите имя файла для таблицы с курсами -->')
+    else:
+        file_path = args.filepath
+    return file_path
+
+if __name__ == '__main__':
+
     course_list = get_courses_list()
     courses_info = []
-    for i in range(0, 19):
+    for i in range(19):
         random_course_url = course_list[random.randrange(0, len(course_list)-1)]
         course_soup = get_soup_for_course(random_course_url)
         courses_info.append(get_course_info(course_soup))
-    if not args.filepath:
-        filepath = input('Введите имя файла для таблицы с курсами -->')
-    else:
-        filepath = args.filepath
+    filepath = get_filepath()
     output_courses_info_to_xlsx(filepath, courses_info)
 
 
